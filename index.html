@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NodOrder - 머리 움직임 기반 무접촉 키오스크</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/kiosk.css">
+</head>
+<body class="kiosk-app">
+  <div class="app-container">
+
+    <!-- ═══ 헤더 ═══ -->
+    <header class="app-header">
+      <div class="title-row">
+        <div>
+          <h1><span class="brand-mark" aria-hidden="true">N</span> NodOrder <span class="brand-kiosk">무접촉 주문</span></h1>
+          <p class="subtitle">고개로 이동하고, 입을 1초 동안 벌려 선택하세요.</p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <span class="badge badge-ready" id="knn-model-status" style="font-size: 0.82rem; padding: 5px 12px;">
+            서비스 준비 중...
+          </span>
+          <div class="privacy-badge">🔒 주문 중 얼굴 영상 및 개인정보는 별도로 저장되지 않습니다.</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ═══ 메인 레이아웃: 키오스크 콘텐츠(넓게) + 카메라 패널(좁게) ═══ -->
+    <main class="main-layout">
+
+      <!-- ─── 1. 좌측 (넓은 쪽): 키오스크 주문 화면 ─── -->
+      <section class="kiosk-container">
+
+        <!-- 단계 진행 바 + 액션 토스트 -->
+        <div class="panel-card kiosk-top-bar">
+          <div class="kiosk-header">
+            <div class="step-progress-bar">
+              <div class="step-dot active" id="step-dot-1" data-label="매장/포장">1</div>
+              <div class="step-line" id="step-line-12"></div>
+              <div class="step-dot" id="step-dot-2" data-label="메뉴 선택">2</div>
+              <div class="step-line" id="step-line-23"></div>
+              <div class="step-dot" id="step-dot-3" data-label="주문 확인">3</div>
+              <div class="step-line" id="step-line-34"></div>
+              <div class="step-dot" id="step-dot-4" data-label="완료">4</div>
+            </div>
+            <div class="kiosk-status-right">
+              <span id="status-badge" class="badge badge-warning">초기화 중</span>
+              <span id="calib-badge" class="badge badge-warning">기준 자세 설정 필요</span>
+            </div>
+          </div>
+          <!-- 액션 토스트 -->
+          <div class="kiosk-action-toast" style="margin-top: 12px;">
+            <span>💡</span>
+            <span id="kiosk-toast-text">카메라가 얼굴을 인식하면 5초 후 기준 자세를 자동으로 설정합니다.</span>
+          </div>
+        </div>
+
+        <!-- ══ STEP 1: 매장 / 포장 ══ -->
+        <div id="step-dine-in" class="kiosk-step-panel panel-card">
+          <div class="step-title">어떻게 이용하시겠어요?</div>
+          <p class="step-hint">고개를 왼쪽(포장) 또는 오른쪽(매장)으로 돌려 선택한 뒤, 입을 1초간 벌려 확정하세요.</p>
+          <div class="dine-in-grid">
+            <div id="dine-btn-takeout" class="dine-btn" data-value="TAKEOUT">
+              <span class="dine-icon">🥡</span>
+              <span class="dine-label">포장</span>
+              <span class="dine-hint">←  고개 왼쪽으로 돌리기</span>
+            </div>
+            <div id="dine-btn-dinein" class="dine-btn" data-value="DINE_IN">
+              <span class="dine-icon">🏠</span>
+              <span class="dine-label">매장</span>
+              <span class="dine-hint">고개 오른쪽으로 돌리기  →</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ STEP 2: 메뉴 선택 ══ -->
+        <div id="step-menu" class="kiosk-step-panel" style="display:none;">
+          <div class="panel-card" style="padding: 20px;">
+            <div class="card-title">
+              <span>메뉴를 골라 주세요</span>
+              <small class="text-muted">고개로 메뉴 이동 · 입을 1초 벌려 담기</small>
+            </div>
+            <div id="kiosk-menu-grid" class="kiosk-menu-grid"></div>
+          </div>
+
+          <!-- 장바구니 -->
+          <div class="kiosk-cart-section">
+            <div class="cart-header">
+              <span>장바구니</span>
+              <span class="text-muted" style="font-size: 0.82rem;">
+                입 1초 벌리기 → 담기 &nbsp;|&nbsp; 고개 오른쪽 기울이기 → 주문 확인
+              </span>
+            </div>
+            <div id="kiosk-cart-items" class="cart-items-row">
+              <span class="cart-empty-text">장바구니가 비어 있습니다.</span>
+            </div>
+            <div class="cart-footer">
+              <div>
+                <span class="text-muted" style="font-size: 0.9rem;">총 주문 금액: </span>
+                <span id="kiosk-total-price" class="cart-total-price">0원</span>
+                <small id="kiosk-total-count" class="text-muted" style="margin-left: 6px;">(0개)</small>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button id="btn-kiosk-checkout" class="btn btn-accent"    style="padding: 8px 18px;">📋 주문 확인</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ══ STEP 3: 주문 확인 ══ -->
+        <div id="step-confirm" class="kiosk-step-panel panel-card" style="display:none; padding: 28px;">
+          <div class="step-title">주문 내역을 확인해 주세요</div>
+          <p class="step-hint">고개를 오른쪽(예) 또는 왼쪽(아니오)으로 돌려 선택한 뒤, 입을 1초간 벌려 확정하세요.</p>
+          <div id="confirm-order-summary" class="confirm-order-summary"></div>
+          <div class="confirm-btn-grid">
+            <div id="confirm-btn-no" class="confirm-btn confirm-btn-no">
+              <span class="confirm-btn-icon">❌</span>
+              <span class="confirm-btn-label">아니오</span>
+              <span class="confirm-btn-hint">← 고개 왼쪽으로 돌리기</span>
+            </div>
+            <div id="confirm-btn-yes" class="confirm-btn confirm-btn-yes">
+              <span class="confirm-btn-icon">✅</span>
+              <span class="confirm-btn-label">예, 주문합니다</span>
+              <span class="confirm-btn-hint">고개 오른쪽으로 돌리기 →</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ STEP 4: 주문 완료 ══ -->
+        <div id="step-complete" class="kiosk-step-panel panel-card" style="display:none; padding: 48px; text-align: center;">
+          <div style="font-size: 5rem; margin-bottom: 16px;">🎉</div>
+          <div class="step-title" style="font-size: 2.2rem; margin-bottom: 10px;">주문이 완료되었습니다!</div>
+          <div id="complete-order-id" style="font-size: 1.1rem; color: #94a3b8; margin-bottom: 20px;"></div>
+          <div id="complete-summary" style="font-size: 1.5rem; font-weight: 800; color: #10b981; margin-bottom: 32px;"></div>
+          <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 12px;">잠시 후 자동으로 처음 화면으로 돌아갑니다.</p>
+          <div id="complete-countdown" style="font-size: 3rem; font-weight: 800; color: #38bdf8;">5</div>
+          <button id="btn-new-order" class="btn btn-primary" style="margin-top: 28px; padding: 14px 36px; font-size: 1.1rem;">
+            🔄 새 주문 시작
+          </button>
+        </div>
+
+          <!-- 제스처 안내 (메뉴 단계) -->
+          <div class="panel-card gesture-guide">
+            <div class="gesture-guide-title">제스처 조작 안내</div>
+            <div class="gesture-guide-grid">
+              <div class="gesture-item"><span class="gesture-motion">고개 왼쪽으로 돌리기</span><span class="gesture-arrow" aria-hidden="true">←</span><strong class="gesture-result">왼쪽으로 이동</strong></div>
+              <div class="gesture-item"><span class="gesture-motion">고개 오른쪽으로 돌리기</span><span class="gesture-arrow" aria-hidden="true">→</span><strong class="gesture-result">오른쪽으로 이동</strong></div>
+              <div class="gesture-item"><span class="gesture-motion">고개 위로 들기</span><span class="gesture-arrow" aria-hidden="true">↑</span><strong class="gesture-result">위로 이동</strong></div>
+              <div class="gesture-item"><span class="gesture-motion">고개 아래로 내리기</span><span class="gesture-arrow" aria-hidden="true">↓</span><strong class="gesture-result">아래로 이동</strong></div>
+              <div class="gesture-item"><span class="gesture-motion">입 1초 벌리기</span><span class="gesture-arrow" aria-hidden="true">✓</span><strong class="gesture-result">선택·확정</strong></div>
+              <div class="gesture-item"><span class="gesture-motion">고개 왼쪽으로 기울이기</span><span class="gesture-arrow" aria-hidden="true">↶</span><strong class="gesture-result">이전 단계</strong></div>
+              <div class="gesture-item"><span class="gesture-motion">고개 오른쪽으로 기울이기</span><span class="gesture-arrow" aria-hidden="true">↷</span><strong class="gesture-result">다음 단계</strong></div>
+            </div>
+          </div>
+
+
+      </section>
+
+      <!-- ─── 2. 우측 (좁은 쪽): 카메라 + 제어 패널 ─── -->
+      <aside class="camera-panel">
+
+        <!-- 카메라 뷰 (작게) -->
+        <div class="panel-card camera-card">
+          <div class="camera-label">카메라 미리보기</div>
+          <div class="video-container">
+            <video id="webcam-video" autoplay playsinline muted></video>
+            <canvas id="overlay-canvas"></canvas>
+          </div>
+
+          <div id="camera-connection-status" role="status" aria-live="polite" style="font-size:0.84rem;line-height:1.5;margin-top:8px;color:#194566;font-weight:700;">카메라 켜기를 눌러 시작하세요.</div>
+
+          <!-- 카메라 제어 버튼 -->
+          <div class="controls-row" style="flex-wrap: wrap; gap: 6px; margin-top: 8px;">
+            <button id="btn-start-camera"    type="button" class="btn btn-primary"    style="flex:1; font-size: 0.82rem; padding: 8px 10px;">카메라 켜기</button>
+            <button id="btn-stop-camera"     type="button" class="btn btn-danger"     style="flex:1; font-size: 0.82rem; padding: 8px 10px;" disabled>끄기</button>
+            <button id="btn-calibrate"       type="button" class="btn btn-accent"     style="flex:1 1 100%; font-size: 0.82rem; padding: 8px 10px;" disabled title="스페이스바">기준 자세 설정</button>
+            <button id="btn-reset-calibrate" type="button" class="btn btn-secondary"  style="flex:1 1 100%; font-size: 0.82rem; padding: 8px 10px;">기준 초기화</button>
+          </div>
+
+        </div>
+
+        <!-- 한국어 동작 안내: 분류 결과의 확률 및 진단 정보는 표시하지 않음 -->
+        <div class="panel-card ai-status-card">
+          <div class="ai-status-title">인식한 움직임</div>
+          <div id="knn-predicted-label" class="ai-gesture-display">대기 중</div>
+        </div>
+
+        <!-- 숨겨진 개발자 수치 (JS에서 계속 갱신하지만 화면에 안 보임) -->
+        <div style="display:none;" aria-hidden="true">
+          <div id="val-nose-dx"></div>
+          <div id="val-nose-dy"></div>
+          <div id="val-head-tilt"></div>
+          <div id="val-mouth-mar"></div>
+          <div id="dir-nose-dx"></div>
+          <div id="dir-nose-dy"></div>
+          <div id="dir-head-tilt"></div>
+          <div id="dir-mouth-mar"></div>
+          <div id="val-feature-vector"></div>
+          <div id="knn-neighbor-votes-container"></div>
+          <div id="knn-model-status-hidden"></div>
+        </div>
+
+      </aside>
+    </main>
+
+    <!-- 비접촉 자동 기준 자세 설정: 얼굴 감지 후 5초 카운트다운 -->
+    <div id="auto-calib-overlay" class="auto-calib-overlay" role="status" aria-live="polite" aria-atomic="true" hidden>
+      <div class="auto-calib-panel">
+        <div class="auto-calib-title">기준 자세 자동 설정</div>
+        <p id="auto-calib-text" class="auto-calib-text">정면을 보고 준비하세요</p>
+        <div id="auto-calib-count" class="auto-calib-count" aria-label="남은 시간">5</div>
+        <p class="auto-calib-tip">카메라를 바라보고 편안한 자세를 유지해 주세요.</p>
+      </div>
+    </div>
+
+    <!-- ════ 선택 진행 게이지 (전체 화면 오버레이 — 키오스크 콘텐츠 중앙) ════ -->
+    <div id="mouth-gauge-overlay" class="mouth-gauge-overlay" style="display:none;" aria-live="polite" aria-atomic="true">
+      <canvas id="gauge-canvas" width="200" height="200"></canvas>
+      <div id="gauge-label" class="gauge-label">선택 중...</div>
+    </div>
+
+  </div>
+
+  <!-- 독립적인 일반 스크립트: 모듈 초기화가 실패해도 카메라 버튼은 반응합니다. -->
+  <script src="js/cameraBootstrap.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

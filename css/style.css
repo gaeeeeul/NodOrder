@@ -1,0 +1,161 @@
+/* ==============================================================================
+   [NodOrder] style.css  v2.0  — 고객용 키오스크 UI
+   ============================================================================== */
+
+:root {
+  --bg-color:    #0f172a;
+  --card-bg:     #1e293b;
+  --card-border: #334155;
+  --text-main:   #f8fafc;
+  --text-muted:  #94a3b8;
+  --accent-blue:  #3b82f6;
+  --accent-cyan:  #06b6d4;
+  --accent-green: #10b981;
+  --accent-pink:  #ec4899;
+  --accent-red:   #ef4444;
+  --accent-yellow:#f59e0b;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  line-height: 1.5;
+  padding: 20px;
+}
+
+.app-container { max-width: 1400px; margin: 0 auto; }
+
+/* ── 헤더 ── */
+.app-header { margin-bottom: 20px; border-bottom: 1px solid var(--card-border); padding-bottom: 14px; }
+.title-row  { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+.title-row h1 { font-size: 1.55rem; font-weight: 800; letter-spacing: -0.5px; }
+.subtitle   { color: var(--text-muted); font-size: 0.88rem; margin-top: 4px; }
+.privacy-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background-color: rgba(16,185,129,0.15); color: var(--accent-green);
+  border: 1px solid rgba(16,185,129,0.3); padding: 5px 12px;
+  border-radius: 9999px; font-size: 0.82rem; font-weight: 500;
+}
+
+/* ── 메인 레이아웃: 키오스크(넓게) | 카메라 패널(좁게) ── */
+.main-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 206px;   /* 키오스크 넓게, 카메라 좁게 */
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .main-layout { grid-template-columns: minmax(0, 1fr); }
+  .camera-panel { max-width: 206px; justify-self: end; }
+  .mouth-gauge-overlay { right: 0; }
+}
+
+/* ── 공용 카드 ── */
+.panel-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 20px;
+}
+.card-title {
+  font-size: 1.05rem; font-weight: 700; margin-bottom: 14px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.text-muted  { color: var(--text-muted); }
+.text-accent { color: var(--accent-pink); }
+
+/* ── 배지 ── */
+.badge          { padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
+.badge-ready    { background-color: #3b82f6; color: #fff; }
+.badge-running  { background-color: #10b981; color: #fff; }
+.badge-warning  { background-color: #f59e0b; color: #000; }
+.badge-error    { background-color: #ef4444; color: #fff; }
+.badge-success  { background-color: #10b981; color: #fff; }
+
+/* ── 버튼 ── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px 18px; font-size: 0.95rem; font-weight: 600;
+  border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s ease;
+}
+.btn:disabled          { opacity: 0.4; cursor: not-allowed; }
+.btn-primary           { background-color: var(--accent-blue); color: #fff; }
+.btn-primary:hover:not(:disabled)   { background-color: #2563eb; }
+.btn-danger            { background-color: #dc2626; color: #fff; }
+.btn-danger:hover:not(:disabled)    { background-color: #b91c1c; }
+.btn-accent            { background-color: var(--accent-green); color: #fff; }
+.btn-accent:hover:not(:disabled)    { background-color: #059669; }
+.btn-secondary         { background-color: #475569; color: #fff; }
+.btn-secondary:hover:not(:disabled) { background-color: #334155; }
+
+/* ── 카메라 패널 ── */
+.camera-panel { display: flex; flex-direction: column; gap: 12px; }
+.camera-card  { padding: 10px; }
+.camera-label { font-size: 0.82rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
+
+.video-container {
+  position: relative; width: 100%; aspect-ratio: 4/3;
+  background-color: #000; border-radius: 10px; overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#webcam-video, #overlay-canvas {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  object-fit: cover; transform: scaleX(-1);
+}
+#overlay-canvas { pointer-events: none; }
+
+.controls-row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.camera-status-row {
+  display: flex; justify-content: space-between; margin-top: 8px;
+  padding: 6px 8px; background: rgba(15,23,42,0.6); border-radius: 6px;
+}
+.cam-stat { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); font-family: monospace; }
+
+/* ── AI 판정 패널 (간결) ── */
+.ai-status-card  { padding: 14px; }
+.ai-status-title { font-size: 0.82rem; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; }
+.ai-gesture-display {
+  font-size: 1.1rem; font-weight: 800; color: #38bdf8;
+  min-height: 32px; margin-bottom: 8px;
+}
+.ai-confidence-row { display: flex; align-items: center; gap: 8px; }
+.ai-conf-bar-wrap  { flex: 1; height: 8px; background: #0f172a; border-radius: 4px; overflow: hidden; }
+.ai-conf-bar       { height: 100%; background: linear-gradient(90deg, #38bdf8, #10b981); border-radius: 4px; transition: width 0.15s ease; }
+.ai-conf-text      { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); font-family: monospace; white-space: nowrap; }
+
+/* ── 선택 게이지 오버레이 (전체 화면 중앙 위에 고정) ── */
+.mouth-gauge-overlay {
+  position: fixed;
+  /* 키오스크 콘텐츠 영역 중앙에 띄움 — 오른쪽 카메라 패널 너비 제외 */
+  left: 0;
+  right: 222px;   /* 카메라 패널 너비 + 여백 */
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 1000;
+}
+.gauge-label {
+  color: #fff; font-size: 1.15rem; font-weight: 800;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.9);
+  background: rgba(0,0,0,0.6); padding: 6px 18px;
+  border-radius: 9999px; margin-top: 12px;
+}
+
+/* ── 방향 레이블 (숨겨진 DOM용, 화면 불표시) ── */
+.direction-label { font-size: 0.85rem; font-weight: 600; }
+.metric-value    { font-size: 1.5rem; font-weight: 700; font-family: monospace; color: var(--accent-cyan); }
+.vector-box      { background:#0f172a; border:1px solid var(--card-border); border-radius:8px; padding:10px; font-family:monospace; font-size:0.9rem; color:#38bdf8; }
+
+/* 고객 화면: 동작 인식 결과는 글자로만 표시하고 진단 수치는 숨깁니다. */
+.ai-gesture-display { font-size: 1.05rem; line-height: 1.45; overflow-wrap: anywhere; }
+.step-hint, .menu-desc, .gesture-guide-grid { color: #cbd5e1; }
+.btn { min-height: 42px; }
+@media (max-width: 900px) { .mouth-gauge-overlay { right: 0; } }

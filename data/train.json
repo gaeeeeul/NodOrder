@@ -1,0 +1,50 @@
+{
+  "datasetVersion": "1.0",
+  "description": "NodOrder 학습용 머리 제스처 특징 벡터 데이터셋 (참가자 단위 분리)",
+  "split": "train",
+  "participantIds": ["P01", "P02", "P03"],
+  "featureNames": [
+    "noseDeltaX",
+    "noseDeltaY",
+    "headTiltDeg",
+    "mouthOpenRatio"
+  ],
+  "labels": ["NEUTRAL", "NOD_DOWN", "NOD_UP", "SHAKE_LEFT", "SHAKE_RIGHT", "MOUTH_OPEN"],
+  "samples": [
+    {
+      "participantId": "P01",
+      "trialId": "trial_001",
+      "label": "NEUTRAL",
+      "timestamp": 1731800000000,
+      "features": [0.001, -0.002, 0.25, 0.045]
+    },
+    {
+      "participantId": "P01",
+      "trialId": "trial_002",
+      "label": "NOD_DOWN",
+      "timestamp": 1731800001000,
+      "features": [0.004, 0.185, -0.12, 0.048]
+    },
+    {
+      "participantId": "P01",
+      "trialId": "trial_003",
+      "label": "MOUTH_OPEN",
+      "timestamp": 1731800002000,
+      "features": [-0.002, 0.015, 0.40, 0.485]
+    },
+    {
+      "participantId": "P02",
+      "trialId": "trial_001",
+      "label": "SHAKE_LEFT",
+      "timestamp": 1731800010000,
+      "features": [-0.178, 0.008, -1.85, 0.052]
+    },
+    {
+      "participantId": "P03",
+      "trialId": "trial_001",
+      "label": "SHAKE_RIGHT",
+      "timestamp": 1731800020000,
+      "features": [0.182, -0.005, 2.10, 0.050]
+    }
+  ]
+}

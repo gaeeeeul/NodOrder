@@ -1,0 +1,312 @@
+/* ==============================================================================
+   [NodOrder] kiosk.css  v2.1  — 고객용 키오스크 UI 스타일
+   ============================================================================== */
+
+/* ── 키오스크 최상단 바 ── */
+.kiosk-top-bar   { padding: 16px 20px; }
+.kiosk-header    { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+.kiosk-status-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+/* ── 단계 진행 바 ── */
+.step-progress-bar { display: flex; align-items: center; gap: 0; }
+.step-dot {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; font-weight: 800;
+  background: #1e293b; border: 2px solid #334155; color: #64748b;
+  position: relative; flex-shrink: 0; transition: all 0.3s ease;
+}
+.step-dot::after {
+  content: attr(data-label);
+  position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%);
+  font-size: 0.65rem; font-weight: 600; color: #64748b; white-space: nowrap;
+}
+.step-dot.active { background: var(--accent-blue); border-color: var(--accent-blue); color: #fff; box-shadow: 0 0 14px rgba(59,130,246,0.5); }
+.step-dot.done   { background: #10b981; border-color: #10b981; color: #fff; }
+.step-line       { flex: 1; height: 3px; background: #334155; transition: background 0.3s; min-width: 28px; }
+.step-line.done  { background: #10b981; }
+
+/* ── 액션 토스트 ── */
+.kiosk-action-toast {
+  background: rgba(15,23,42,0.85); border: 1px solid var(--accent-cyan);
+  border-radius: 10px; padding: 10px 16px;
+  font-size: 0.92rem; font-weight: 600; color: var(--accent-cyan);
+  display: flex; align-items: center; gap: 10px; min-height: 40px;
+}
+
+/* ── 키오스크 단계 패널 공통 ── */
+.kiosk-container   { display: flex; flex-direction: column; gap: 16px; }
+.kiosk-step-panel  { animation: fadeIn 0.3s ease; }
+@keyframes fadeIn  { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.step-title { font-size: 1.6rem; font-weight: 800; color: var(--text-main); margin-bottom: 10px; }
+.step-hint  { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 24px; line-height: 1.6; }
+
+/* ── STEP 1: 매장/포장 ── */
+.dine-in-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.dine-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  background: #0f172a; border: 3px solid #334155; border-radius: 20px; padding: 36px 20px;
+  cursor: pointer; transition: all 0.25s ease;
+}
+.dine-btn:hover                   { border-color: var(--accent-blue); transform: translateY(-2px); }
+.dine-btn.is-focused              { border-color: #38bdf8; background: rgba(56,189,248,0.1); box-shadow: 0 0 28px rgba(56,189,248,0.4); transform: translateY(-3px) scale(1.02); }
+.dine-icon  { font-size: 4rem; }
+.dine-label { font-size: 1.8rem; font-weight: 800; color: var(--text-main); }
+.dine-hint  { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
+
+/* ── STEP 2: 메뉴 그리드 ── */
+.kiosk-menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.menu-card {
+  position: relative; background-color: #0f172a; border: 2px solid var(--card-border);
+  border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 8px;
+  transition: all 0.2s cubic-bezier(0.4,0,0.2,1); cursor: pointer; overflow: hidden;
+}
+.menu-card-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.menu-icon  { font-size: 2.8rem; line-height: 1; }
+.menu-price { font-size: 1.25rem; font-weight: 800; font-family: monospace; color: #38bdf8; }
+.menu-name  { font-size: 1.2rem; font-weight: 700; color: var(--text-main); }
+.menu-desc  { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+.menu-card.is-focused {
+  border-color: #38bdf8;
+  background: linear-gradient(135deg, rgba(30,41,59,0.95), rgba(15,23,42,0.95));
+  box-shadow: 0 0 28px rgba(56,189,248,0.55), inset 0 0 14px rgba(56,189,248,0.2);
+  transform: translateY(-3px) scale(1.02);
+}
+.focus-indicator-badge {
+  display: none; position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  background: linear-gradient(90deg, #2563eb, #06b6d4); color: #fff;
+  font-size: 0.75rem; font-weight: 800; padding: 3px 12px; border-radius: 9999px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4); animation: pulse-focus 1.2s ease-in-out infinite;
+}
+.menu-card.is-focused .focus-indicator-badge { display: inline-block; }
+@keyframes pulse-focus {
+  0%,100% { opacity: 1; transform: translateX(-50%) scale(1); }
+  50%      { opacity: 0.85; transform: translateX(-50%) scale(0.96); }
+}
+
+/* ── 장바구니 ── */
+.kiosk-cart-section {
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  border: 2px solid var(--card-border); border-radius: 14px; padding: 18px 22px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.cart-header    { display: flex; justify-content: space-between; align-items: center; font-size: 1rem; font-weight: 700; }
+.cart-items-row { display: flex; flex-wrap: wrap; gap: 8px; min-height: 40px; align-items: center; }
+.cart-item-chip {
+  background-color: #0f172a; border: 1px solid var(--accent-blue); border-radius: 8px;
+  padding: 6px 14px; font-size: 0.9rem; font-weight: 600; color: var(--text-main);
+  display: flex; align-items: center; gap: 6px;
+  animation: pop-in 0.2s cubic-bezier(0.175,0.885,0.32,1.275);
+}
+@keyframes pop-in { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+.cart-item-count { background-color: var(--accent-blue); color: #fff; font-size: 0.78rem; font-weight: 800; padding: 1px 7px; border-radius: 9999px; }
+.cart-empty-text { font-size: 0.88rem; color: var(--text-muted); }
+.cart-footer     { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--card-border); padding-top: 12px; }
+.cart-total-price { font-size: 1.5rem; font-weight: 800; font-family: monospace; color: var(--accent-green); }
+
+/* ── 제스처 안내 ── */
+.gesture-guide       { padding: 16px 20px; }
+.gesture-guide-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 10px; }
+.gesture-guide-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; font-size: 0.85rem; color: #cbd5e1; }
+.gesture-item        { display: flex; align-items: center; gap: 8px; }
+.gesture-icon        { font-size: 1.2rem; flex-shrink: 0; }
+
+/* ── STEP 3: 주문 확인 ── */
+.confirm-order-summary {
+  background: #0f172a; border: 1px solid var(--card-border); border-radius: 12px;
+  padding: 18px; margin-bottom: 24px; display: flex; flex-direction: column; gap: 10px;
+}
+.confirm-summary-row       { display: flex; justify-content: space-between; font-size: 1rem; color: #cbd5e1; }
+.confirm-summary-row.total {
+  border-top: 1px solid var(--card-border); padding-top: 12px; margin-top: 4px;
+  font-size: 1.25rem; font-weight: 800; color: var(--accent-green);
+}
+.confirm-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.confirm-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  border: 3px solid #334155; border-radius: 18px; padding: 28px 16px;
+  cursor: pointer; transition: all 0.25s ease;
+}
+.confirm-btn-no  { background: rgba(239,68,68,0.08); }
+.confirm-btn-yes { background: rgba(16,185,129,0.08); }
+.confirm-btn.is-focused.confirm-btn-no  { border-color: #ef4444; box-shadow: 0 0 24px rgba(239,68,68,0.4); transform: scale(1.03); }
+.confirm-btn.is-focused.confirm-btn-yes { border-color: #10b981; box-shadow: 0 0 24px rgba(16,185,129,0.4); transform: scale(1.03); }
+.confirm-btn-icon  { font-size: 2.8rem; }
+.confirm-btn-label { font-size: 1.4rem; font-weight: 800; color: var(--text-main); }
+.confirm-btn-hint  { font-size: 0.82rem; color: var(--text-muted); font-weight: 600; }
+
+/* 주문 정보는 유지하면서 작은 화면에서도 선택 영역을 확보합니다. */
+.cart-footer { gap: 12px; flex-wrap: wrap; }
+.menu-name { font-size: 1.3rem; }
+.menu-price { font-family: inherit; }
+.gesture-guide-grid { font-size: 0.94rem; }
+@media (max-width: 520px) { .dine-in-grid, .confirm-btn-grid { gap: 10px; } .dine-btn { padding: 22px 10px; } .kiosk-menu-grid { gap: 8px; } .menu-card { padding: 12px; } }
+
+
+/* ===== 고객용 주문 키오스크: 완성형 화면 레이아웃 (v3) =====
+   데이터 수집 페이지에는 영향을 주지 않도록 kiosk-app 아래에만 적용합니다. */
+body.kiosk-app {
+  background: #f3f5f7; color: #182230; padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+}
+.kiosk-app .app-container { max-width: 1600px; min-height: 100vh; margin: 0 auto; padding: 0 22px 32px; }
+.kiosk-app .app-header {
+  background: #142534; color: #fff; margin: 0 -22px 22px; padding: 22px clamp(22px,3vw,48px); border: 0;
+  border-bottom: 5px solid #10a7a0; box-shadow: 0 7px 22px rgba(17,34,51,.12);
+}
+.kiosk-app .title-row { gap: 18px; }
+.kiosk-app .title-row h1 { display: flex; align-items: center; gap: 10px; color: #fff; font-size: clamp(1.45rem,2.25vw,2.15rem); letter-spacing: -.045em; }
+.kiosk-app .brand-mark { background: #17bbb2; color: #122635; width: 48px; height: 48px; display:inline-flex; align-items:center; justify-content:center; border-radius: 14px; font-size:1.6rem; font-weight:900; }
+.kiosk-app .brand-kiosk { font-size: .7em; font-weight: 600; color: #c4d4dc; letter-spacing:0; padding-left: 8px; border-left:1px solid #647987; }
+.kiosk-app .subtitle { color:#dbe7ea; font-size:1rem; margin-top: 7px; margin-left:58px; }
+.kiosk-app .privacy-badge { color:#d2f7ed; background: #25473f; border:1px solid #3f7268; font-size:.82rem; }
+.kiosk-app #knn-model-status { background: #eefbf7; color:#0b665b; border: 1px solid #88d7c5; font-size:.85rem !important; padding: 8px 14px !important; }
+.kiosk-app .main-layout { grid-template-columns: minmax(0, 1fr) 205px; gap: 20px; align-items:start; }
+.kiosk-app .kiosk-container { min-width:0; gap: 18px; }
+.kiosk-app .panel-card, .kiosk-app .kiosk-cart-section { background: #fff; color: #172431; border: 1px solid #dce4e9; border-radius: 20px; box-shadow: 0 4px 18px rgba(21,42,55,.055); }
+.kiosk-app .kiosk-top-bar { padding: 26px 30px 28px; }
+.kiosk-app .kiosk-header { gap: 38px; justify-content:space-between; margin-bottom:26px; }
+.kiosk-app .step-progress-bar { flex: 1; max-width: 760px; justify-content:center; }
+.kiosk-app .step-dot { width: 46px; height:46px; border-radius: 14px; font-size:1.05rem; border:2px solid #d3dee3; color:#64727d; background:#f3f6f8; }
+.kiosk-app .step-dot::after { bottom:-24px; font-size:.77rem; color:#52616d; font-weight:750; }
+.kiosk-app .step-dot.active { background:#087c78; border-color:#087c78; color:white; box-shadow:0 0 0 5px #d5f5ef; }
+.kiosk-app .step-dot.done { background:#137c63; border-color:#137c63; color:#fff; }
+.kiosk-app .step-line { background:#dbe4e9; height:4px; min-width:38px; }
+.kiosk-app .step-line.done { background:#17ab90; }
+.kiosk-app .kiosk-status-right .badge { padding:8px 11px; border-radius:8px; font-size:.77rem; }
+.kiosk-app .badge-warning { background:#fff0cf; color:#815000; }
+.kiosk-app .badge-running, .kiosk-app .badge-ready, .kiosk-app .badge-success { background:#d3f5e9; color:#075e49; }
+.kiosk-app .kiosk-action-toast { background:#ebf8f7; color:#075954; border:1px solid #b4e7e1; border-left:5px solid #0c8c85; padding:15px 17px; border-radius:12px; min-height:56px; font-size:1rem; }
+.kiosk-app .kiosk-step-panel.panel-card { padding: clamp(24px, 3vw, 42px) !important; }
+.kiosk-app .step-title { color:#142534; font-size:clamp(1.65rem,2.5vw,2.35rem); font-weight:850; letter-spacing:-.045em; margin-bottom:8px; }
+.kiosk-app .step-hint { color:#526473; font-size:1.04rem; line-height:1.65; margin-bottom:24px; }
+.kiosk-app .dine-in-grid { gap:22px; }
+.kiosk-app .dine-btn { background:#f8fafb; color:#162632; border:3px solid #d8e3e8; border-radius:22px; padding: clamp(34px,5vw,76px) 15px; min-height:265px; justify-content:center; }
+.kiosk-app .dine-btn:hover { border-color:#087d79; transform:none; }
+.kiosk-app .dine-btn.is-focused { background:#e7faf5; border-color:#087d79; outline:4px solid #bbefdf; box-shadow:none; transform:none; }
+.kiosk-app .dine-icon { font-size:4.5rem; }
+.kiosk-app .dine-label { color:#182b34; font-size:2.2rem; }
+.kiosk-app .dine-hint { color:#496473; font-size:.95rem; }
+.kiosk-app #step-menu > .panel-card { padding:28px !important; }
+.kiosk-app .card-title { color:#172632; font-size:1.75rem; font-weight:850; gap:10px; flex-wrap:wrap; margin-bottom:22px; }
+.kiosk-app .card-title small { font-size:.9rem; font-weight:500; }
+.kiosk-app .text-muted { color:#50616b; }
+.kiosk-app .kiosk-menu-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap:14px; }
+.kiosk-app .menu-card { background:#f9fbfc; border:3px solid #e0e7e9; border-radius:20px; padding:23px 21px; min-height:170px; gap:8px; justify-content:space-between; }
+.kiosk-app .menu-card:hover { border-color:#71b8b1; }
+.kiosk-app .menu-card.is-focused { background:#e8f9f5; border-color:#078a81; box-shadow:0 0 0 4px #c8efe8; transform:none; }
+.kiosk-app .menu-card-top { align-items:center; margin-bottom:3px; gap:8px; }
+.kiosk-app .menu-icon { font-size:3.15rem; }
+.kiosk-app .menu-name { color:#162834; font-size:clamp(1.25rem,1.7vw,1.52rem); font-weight:820; line-height:1.2; }
+.kiosk-app .menu-price { font-family:inherit; color:#006e6c; font-size:clamp(1.15rem,1.5vw,1.4rem); font-weight:850; white-space:nowrap; }
+.kiosk-app .menu-desc { color:#50626c; font-size:.94rem; line-height:1.5; }
+.kiosk-app .focus-indicator-badge { top:8px; left:50%; z-index:1; background:#087d79; color:white; box-shadow:none; }
+.kiosk-app .kiosk-cart-section { padding:26px; gap:18px; border-top:5px solid #087d79; }
+.kiosk-app .cart-header { font-size:1.5rem; color:#142532; font-weight:850; flex-wrap:wrap; gap:8px; }
+.kiosk-app .cart-header .text-muted { font-size:.86rem !important; font-weight:500; }
+.kiosk-app .cart-items-row { min-height:50px; gap:10px; }
+.kiosk-app .cart-item-chip { background:#eff6f6; color:#20333e; border-color:#bfdbd7; padding:10px 12px; font-size:1rem; border-radius:10px; }
+.kiosk-app .cart-item-count { background:#087d79; }
+.kiosk-app .cart-empty-text { font-size:1rem; color:#60707b; }
+.kiosk-app .cart-footer { border-color:#e0e9eb; padding-top:18px; gap:16px; }
+.kiosk-app .cart-total-price { color:#006b62; font-family:inherit; font-size:1.9rem; }
+.kiosk-app .btn { border-radius:12px; padding:12px 18px; min-height:50px; font-size:1rem; font-weight:760; }
+.kiosk-app .btn-primary { background:#0c8179; color:white; }
+.kiosk-app .btn-accent { background:#0c8179; color:white; }
+.kiosk-app .btn-secondary { background:#e5ecef; color:#263a46; }
+.kiosk-app .btn-danger { background:#ffe8e5; color:#8d211a; }
+.kiosk-app .btn-primary:hover:not(:disabled), .kiosk-app .btn-accent:hover:not(:disabled) { background:#075b55; }
+.kiosk-app .btn-secondary:hover:not(:disabled) { background:#d2e1e5; }
+.kiosk-app .btn-danger:hover:not(:disabled) { background:#ffd5ce; }
+.kiosk-app .gesture-guide { padding:24px 28px; margin-top:2px; }
+.kiosk-app .gesture-guide-title { color:#142a36; font-size:1.26rem; font-weight:850; margin-bottom:15px; }
+.kiosk-app .gesture-guide-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:11px 22px; font-size:1rem; color:#334957; }
+.kiosk-app .gesture-item { display:flex; align-items:center; gap:10px; background:#f3f7f8; border-radius:10px; padding:9px 12px; }
+.kiosk-app .gesture-icon { font-size:1.5rem; }
+.kiosk-app .confirm-order-summary { background:#f5f8fa; border-color:#dde6e9; padding:24px; border-radius:16px; }
+.kiosk-app .confirm-summary-row { color:#263e4b; font-size:1.17rem; padding:5px; gap:14px; }
+.kiosk-app .confirm-summary-row.total { color:#006b62; border-color:#d5e3e5; font-size:1.45rem; }
+.kiosk-app .confirm-btn { background:#f8fafb; color:#192f3a; border:3px solid #dbe4e7; min-height:165px; padding:24px; }
+.kiosk-app .confirm-btn.is-focused { background:#e9f9f5; border-color:#087d79 !important; box-shadow:0 0 0 4px #c4eee5 !important; transform:none !important; }
+.kiosk-app .confirm-btn-label { color:#182c36; font-size:1.55rem; }
+.kiosk-app .confirm-btn-hint { color:#566c76; font-size:.93rem; }
+.kiosk-app #step-complete .step-title { color:#152934; }
+.kiosk-app .camera-panel { position:sticky; top:16px; gap:12px; }
+.kiosk-app .camera-card { background:#172b39; color:white; padding:12px; border-color:#172b39; border-radius:17px; box-shadow: 0 7px 20px rgba(19,40,51,.12); }
+.kiosk-app .camera-label { color:#e3eff2; font-size:.88rem; font-weight:750; }
+.kiosk-app .video-container { border-radius:11px; box-shadow:none; background:#0b1821; aspect-ratio:4/3; }
+.kiosk-app .camera-card .controls-row .btn { font-size:.84rem !important; padding:10px 6px !important; min-height:43px; border-radius:9px; }
+.kiosk-app .camera-card .btn-secondary { background:#d3e1e5; color:#243b49; }
+.kiosk-app .camera-card .btn-danger { background:#f8ddda; color:#852b20; }
+.kiosk-app .ai-status-card { background:#fff; padding:15px; border-radius:15px; }
+.kiosk-app .ai-status-title { color:#52626d; font-size:.83rem; }
+.kiosk-app .ai-gesture-display { color:#075f61; font-size:1.09rem; font-weight:850; line-height:1.4; margin:0; overflow-wrap:anywhere; }
+.kiosk-app .mouth-gauge-overlay { left:0; right:225px; top:0; bottom:0; justify-content:center; }
+.kiosk-app #gauge-canvas { width:220px; height:220px; filter:drop-shadow(0 7px 24px rgba(15,38,44,.3)); }
+.kiosk-app .gauge-label { background:#172b39; color:white; padding:11px 23px; border:2px solid #d5ece8; border-radius:13px; font-size:1.24rem; margin-top:10px; text-shadow:none; }
+@media (min-width:1250px) { .kiosk-app .kiosk-menu-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:900px) {
+  .kiosk-app .main-layout { grid-template-columns:minmax(0,1fr); }
+  .kiosk-app .camera-panel { position:relative; top:auto; max-width:none; justify-self:stretch; flex-direction:row; align-items:start; }
+  .kiosk-app .camera-card { width:225px; }
+  .kiosk-app .ai-status-card { flex:1; }
+  .kiosk-app .mouth-gauge-overlay { right:0; }
+}
+@media (max-width:620px) {
+  .kiosk-app .app-container { padding:0 12px 24px; }
+  .kiosk-app .app-header { margin:0 -12px 14px; padding:17px 16px; }
+  .kiosk-app .title-row h1 { font-size:1.2rem; }
+  .kiosk-app .brand-mark { width:36px; height:36px; border-radius:9px; }
+  .kiosk-app .subtitle { margin-left:0; font-size:.88rem; }
+  .kiosk-app .kiosk-top-bar { padding:22px 14px 16px; }
+  .kiosk-app .kiosk-header { margin-bottom:31px; gap:18px; }
+  .kiosk-app .step-dot { width:33px; height:33px; border-radius:10px; }
+  .kiosk-app .step-dot::after { font-size:.62rem; bottom:-21px; }
+  .kiosk-app .step-line { min-width:8px; }
+  .kiosk-app .kiosk-step-panel.panel-card { padding:21px 14px !important; }
+  .kiosk-app #step-menu > .panel-card { padding:18px 12px !important; }
+  .kiosk-app .kiosk-menu-grid { gap:10px; }
+  .kiosk-app .menu-card { padding:13px 10px; min-height:165px; }
+  .kiosk-app .menu-icon { font-size:2rem; }
+  .kiosk-app .menu-price { font-size:.98rem; }
+  .kiosk-app .menu-name { font-size:1.07rem; }
+  .kiosk-app .menu-desc { font-size:.76rem; }
+  .kiosk-app .dine-in-grid { gap:10px; }
+  .kiosk-app .dine-btn { padding:26px 8px; min-height:195px; }
+  .kiosk-app .dine-icon { font-size:3.3rem; }
+  .kiosk-app .dine-label { font-size:1.6rem; }
+  .kiosk-app .dine-hint { font-size:.75rem; }
+  .kiosk-app .gesture-guide-grid { grid-template-columns:1fr; }
+  .kiosk-app .cart-footer > div { width:100%; }
+  .kiosk-app .camera-panel { flex-wrap:wrap; }
+  .kiosk-app .camera-card { width:100%; max-width:265px; }
+  .kiosk-app .confirm-btn-grid { gap:9px; }
+  .kiosk-app .confirm-btn { padding:18px 8px; min-height:142px; }
+  .kiosk-app .confirm-btn-label { font-size:1.15rem; }
+  .kiosk-app #gauge-canvas { width:180px; height:180px; }
+}
+
+/* 고객 안내: 동작 이름과 그 결과를 시각적으로 구분 */
+.kiosk-app .gesture-guide-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.kiosk-app .gesture-item { display:grid; grid-template-columns:minmax(0,1fr) 46px minmax(100px,.75fr); align-items:center; column-gap:10px; background:#f0f6f7; border:1px solid #d9e7e9; padding:12px; }
+.kiosk-app .gesture-motion { font-size:.96rem; font-weight:650; color:#263f4a; }
+.kiosk-app .gesture-arrow { background:#075f61; color:white; border-radius:12px; text-align:center; font-size:1.8rem; font-weight:900; line-height:1.5; }
+.kiosk-app .gesture-result { color:#075f61; font-size:1.05rem; font-weight:850; }
+@media(max-width:800px){ .kiosk-app .gesture-guide-grid { grid-template-columns:1fr; } }
+
+/* 얼굴 인식 기반 자동 기준 자세 설정 안내 (카메라 영상 크기와 무관) */
+.kiosk-app .auto-calib-overlay {
+  position: fixed; inset: 0; z-index: 1200; display: flex;
+  align-items: center; justify-content: center; pointer-events: none;
+  background: rgba(13, 31, 39, .40); padding: 20px;
+}
+.kiosk-app .auto-calib-overlay[hidden] { display: none !important; }
+.kiosk-app .auto-calib-panel {
+  width: min(450px, 92vw); background: #fff; color: #142e38;
+  border: 3px solid #087d79; border-radius: 25px; padding: 30px 24px;
+  box-shadow: 0 20px 75px rgba(10, 31, 43, .34); text-align: center;
+}
+.kiosk-app .auto-calib-title { font-size: clamp(1.25rem, 2vw, 1.65rem); font-weight: 850; }
+.kiosk-app .auto-calib-text { font-size: clamp(1.15rem, 2vw, 1.4rem); font-weight: 750; margin: 14px 0 8px; }
+.kiosk-app .auto-calib-count { font-size: clamp(5rem, 10vw, 7.2rem); font-weight: 900; line-height: 1.1; color: #087d79; font-variant-numeric: tabular-nums; }
+.kiosk-app .auto-calib-tip { color: #435c68; font-size: 1rem; margin-top: 12px; line-height: 1.6; }

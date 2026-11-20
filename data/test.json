@@ -1,0 +1,43 @@
+{
+  "datasetVersion": "1.0",
+  "description": "NodOrder 평가용 머리 제스처 특징 벡터 데이터셋 (학습군과 완전히 독립된 참가자)",
+  "split": "test",
+  "participantIds": ["P04", "P05"],
+  "featureNames": [
+    "noseDeltaX",
+    "noseDeltaY",
+    "headTiltDeg",
+    "mouthOpenRatio"
+  ],
+  "labels": ["NEUTRAL", "NOD_DOWN", "NOD_UP", "SHAKE_LEFT", "SHAKE_RIGHT", "MOUTH_OPEN"],
+  "samples": [
+    {
+      "participantId": "P04",
+      "trialId": "trial_001",
+      "label": "NEUTRAL",
+      "timestamp": 1731800050000,
+      "features": [-0.003, 0.001, -0.30, 0.042]
+    },
+    {
+      "participantId": "P04",
+      "trialId": "trial_002",
+      "label": "NOD_DOWN",
+      "timestamp": 1731800051000,
+      "features": [0.008, 0.192, 0.15, 0.046]
+    },
+    {
+      "participantId": "P05",
+      "trialId": "trial_001",
+      "label": "MOUTH_OPEN",
+      "timestamp": 1731800060000,
+      "features": [0.001, 0.021, -0.10, 0.512]
+    },
+    {
+      "participantId": "P05",
+      "trialId": "trial_002",
+      "label": "SHAKE_LEFT",
+      "timestamp": 1731800061000,
+      "features": [-0.165, 0.012, -1.60, 0.049]
+    }
+  ]
+}

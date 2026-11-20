@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NodOrder - AI 모델 학습용 얼굴 제스처 데이터 수집기</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/data-collection.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- 1. 네비게이션 헤더 -->
+    <header class="nav-header">
+      <div class="nav-left">
+        <a href="index.html" class="btn-nav">← 키오스크 테스트 화면으로</a>
+        <div>
+          <h1>NodOrder 데이터 수집기 (Data Collector)</h1>
+          <p class="subtitle">규칙 기반 · KNN · MLP 세 모델의 공정한 비교를 위한 표준 4차원 특징 벡터 수집 도구</p>
+        </div>
+      </div>
+      <div class="privacy-badge">
+        <span>🔒 100% 브라우저 로컬 연산 (영상/사진 저장 없음 · 숫자 특징값만 저장)</span>
+      </div>
+    </header>
+
+    <!-- 2. 상단 참가자 코드 및 통합 제어 바 -->
+    <section class="participant-bar">
+      <div class="participant-input-group">
+        <label for="input-participant-id">참가자 코드 (ID):</label>
+        <input type="text" id="input-participant-id" class="input-participant" value="P01" maxlength="6" title="예: P01, P02, P03">
+        <span class="text-muted" style="font-size: 0.85rem;">(개인정보 미포함 익명 코드)</span>
+      </div>
+
+      <div class="control-btn-group">
+        <button id="btn-start-camera" class="btn btn-primary">📹 웹캠 켜기</button>
+        <button id="btn-stop-camera" class="btn btn-secondary" disabled>⏹ 웹캠 끄기</button>
+        <button id="btn-calibrate" class="btn btn-accent" disabled title="단축키: 스페이스바">🎯 중립 자세 캘리브레이션</button>
+        <span id="calib-badge" class="badge badge-warning">캘리브레이션 미설정</span>
+      </div>
+
+      <div class="control-btn-group">
+        <button id="btn-start-collection" class="btn btn-accent" disabled style="background-color: #059669; font-size: 1.05rem;">
+          ▶ 수집 시작 (자동 16회 시퀀스)
+        </button>
+        <button id="btn-pause-collection" class="btn btn-secondary" disabled>⏸ 일시정지</button>
+        <button id="btn-stop-collection" class="btn btn-danger" disabled>⏹ 수집 중단</button>
+      </div>
+    </section>
+
+    <!-- 3. 메인 그리드 레이아웃 -->
+    <main class="main-layout">
+      <!-- 좌측 열: 비디오 피드 및 실시간 특징값 모니터링 -->
+      <section class="video-panel">
+        <div class="video-container">
+          <video id="webcam-video" autoplay playsinline muted></video>
+          <canvas id="overlay-canvas"></canvas>
+        </div>
+
+        <div class="status-bar">
+          <div class="status-group">
+            <span>카메라 상태:</span>
+            <span id="camera-status-badge" class="badge badge-warning">대기 중</span>
+          </div>
+          <div class="status-group">
+            <span id="resolution-display">640 × 480</span>
+          </div>
+        </div>
+
+        <!-- 실시간 4대 특징값 미니 그리드 -->
+        <div class="panel-card" style="padding: 14px; margin-top: 8px;">
+          <div class="card-title" style="margin-bottom: 8px; font-size: 0.95rem;">
+            <span>실시간 추출 특징값 (Live Features)</span>
+            <small class="text-muted">안구 간격 정규화</small>
+          </div>
+          <div class="metrics-grid">
+            <div class="metric-card" style="padding: 10px;">
+              <span class="text-muted" style="font-size: 0.78rem;">코 X 변위 (ΔX)</span>
+              <div id="val-nose-dx" class="metric-value" style="font-size: 1.4rem;">0.0000</div>
+            </div>
+            <div class="metric-card" style="padding: 10px;">
+              <span class="text-muted" style="font-size: 0.78rem;">코 Y 변위 (ΔY)</span>
+              <div id="val-nose-dy" class="metric-value" style="font-size: 1.4rem;">0.0000</div>
+            </div>
+            <div class="metric-card" style="padding: 10px;">
+              <span class="text-muted" style="font-size: 0.78rem;">머리 기울기 (θ)</span>
+              <div id="val-head-tilt" class="metric-value" style="font-size: 1.4rem;">0.00°</div>
+            </div>
+            <div class="metric-card" style="padding: 10px;">
+              <span class="text-muted" style="font-size: 0.78rem;">입 벌림 비율 (MAR)</span>
+              <div id="val-mouth-mar" class="metric-value" style="font-size: 1.4rem;">0.0000</div>
+            </div>
+          </div>
+          <!-- 공통 특징 벡터 -->
+          <div style="margin-top: 10px;">
+            <span class="text-muted" style="font-size: 0.78rem;">표준 4차원 벡터:</span>
+            <div id="val-feature-vector" class="vector-box" style="font-size: 0.85rem; padding: 6px 10px;">[ 0, 0, 0, 0 ]</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 우측 열: 대화형 수집 안내 카드 & 진행률 & 통계 -->
+      <section class="dashboard-panel">
+        <!-- 핵심 동작 안내 카드 -->
+        <div class="action-guide-card">
+          <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+            <span id="phase-badge" class="badge badge-ready" style="font-size: 0.85rem; padding: 5px 12px;">대기 중</span>
+            <span id="action-repetition" class="badge badge-secondary" style="font-size: 0.85rem; padding: 5px 12px;">0 / 2 회차</span>
+          </div>
+
+          <!-- 큰 아이콘 및 동작 이름 -->
+          <div id="action-icon" class="action-icon-large">🎯</div>
+          <h2 id="action-name" class="action-title">중립 자세 캘리브레이션 필요</h2>
+          <p id="action-desc" class="action-description">
+            상단의 [중립 자세 캘리브레이션] 버튼을 눌러 정면 기준값을 등록한 후 [수집 시작]을 클릭하세요.
+          </p>
+
+          <!-- 카운트다운 타이머 -->
+          <div class="countdown-box">
+            <span class="countdown-label">남은 시간:</span>
+            <span id="countdown-display" class="countdown-num">0.0초</span>
+          </div>
+
+          <!-- 상태 메시지 -->
+          <div id="collection-status-message" class="text-muted" style="font-size: 0.9rem; min-height: 22px;">
+            웹캠을 켜고 중립 자세 캘리브레이션을 진행해 주세요.
+          </div>
+
+          <!-- 전체 진행률 바 -->
+          <div class="overall-progress-container">
+            <div class="overall-progress-header">
+              <span>전체 수집 진행률 (8개 동작 × 2회 = 총 16 트라이얼)</span>
+              <span id="overall-progress-text">0 / 16 트라이얼 (0%)</span>
+            </div>
+            <div class="progress-track">
+              <div id="overall-progress-bar" class="progress-bar-fill"></div>
+            </div>
+          </div>
+
+          <!-- 실시간 샘플 카운터 -->
+          <div class="sample-counter-row">
+            <div class="counter-card">
+              <div class="label">현재 트라이얼 수집 프레임 (5Hz)</div>
+              <div id="trial-sample-count" class="value">0개</div>
+            </div>
+            <div class="counter-card">
+              <div class="label">참가자 총 누적 수집 프레임</div>
+              <div id="total-sample-count" class="value">0개</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8개 수집 대상 동작 가이드 미니 테이블 -->
+        <div class="panel-card" style="padding: 16px;">
+          <div class="card-title" style="font-size: 0.95rem; margin-bottom: 10px;">
+            <span>수집 대상 8대 제스처 안내 (총 16개 트라이얼)</span>
+            <small class="text-muted">각 동작당 1.5초 유지</small>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.84rem;">
+            <div>1. <code>NEUTRAL</code>: 😐 정면 응시</div>
+            <div>2. <code>LEFT</code>: 👈 고개 왼쪽 회전</div>
+            <div>3. <code>RIGHT</code>: 👉 고개 오른쪽 회전</div>
+            <div>4. <code>UP</code>: 👆 고개 위로 들기</div>
+            <div>5. <code>DOWN</code>: 👇 고개 숙이기 (끄덕임)</div>
+            <div>6. <code>TILT_CCW</code>: ⤹ 머리 왼쪽(반시계) 기울임</div>
+            <div>7. <code>TILT_CW</code>: ⤸ 머리 오른쪽(시계) 기울임</div>
+            <div>8. <code>MOUTH_OPEN</code>: 😮 입 벌리기</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 4. 하단 데이터 저장소 및 파일 다운로드 관리 패널 -->
+    <section class="panel-card" style="margin-top: 24px;">
+      <div class="card-title">
+        <div>
+          <span>💾 수집 데이터 저장소 관리 (IndexedDB 브라우저 영구 보관)</span>
+          <p class="subtitle" style="font-size: 0.85rem; margin-top: 2px;">
+            새로고침을 하거나 창을 닫아도 데이터가 사라지지 않으며, 연구용 JSON 및 CSV로 즉시 다운로드할 수 있습니다.
+          </p>
+        </div>
+        <div class="control-btn-group">
+          <button id="btn-download-json-current" class="btn btn-primary" disabled>📥 현재 참가자 JSON</button>
+          <button id="btn-download-csv-current" class="btn btn-primary" disabled>📥 현재 참가자 CSV</button>
+          <button id="btn-download-json-all" class="btn btn-accent" disabled>📦 전체 참가자 통합 JSON</button>
+          <button id="btn-download-csv-all" class="btn btn-accent" disabled>📦 전체 참가자 통합 CSV</button>
+          <button id="btn-clear-all-data" class="btn btn-danger" disabled>🗑 전체 데이터 초기화</button>
+        </div>
+      </div>
+
+      <div class="dataset-table-container">
+        <table class="dataset-table">
+          <thead>
+            <tr>
+              <th>참가자 ID</th>
+              <th>수집 샘플 수</th>
+              <th>완료 트라이얼</th>
+              <th>포함 라벨</th>
+              <th>수집 시각</th>
+              <th>관리 / 개별 다운로드</th>
+            </tr>
+          </thead>
+          <tbody id="participant-table-body">
+            <!-- 자바스크립트로 동적 렌더링 -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- 5. 개인정보 보호 안내 및 동의 확인 모달 -->
+  <div id="consent-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span style="font-size: 2rem;">🔒</span>
+        <h2>연구 데이터 수집 안내 및 개인정보 보호 동의</h2>
+      </div>
+      <div class="modal-body">
+        <p>
+          본 프로그램은 <strong>‘터치가 어려운 상지 지체장애인을 위한 머리 움직임 기반 무접촉 키오스크 주문 서비스(NodOrder)’</strong> 고등학생 연구 프로젝트의 머신러닝 학습 데이터를 수집하기 위해 제작되었습니다.
+        </p>
+        <div class="modal-notice-box">
+          <strong>개인정보 보호 원칙:</strong>
+          <ul>
+            <li><strong>영상/사진 미저장:</strong> 웹캠의 비디오 영상이나 사진은 일체 저장되지 않습니다.</li>
+            <li><strong>숫자 특징값만 추출:</strong> MediaPipe가 분석한 4개의 기하학적 수치(코 상대 변화량, 머리 기울기, 입 벌림 비율)만 숫자로 기록됩니다.</li>
+            <li><strong>100% 로컬 연산:</strong> 모든 연산은 참여자의 브라우저 내부에서만 동작하며, 외부 서버로 전송되지 않습니다.</li>
+            <li><strong>익명 코드 관리:</strong> 참가자의 실명이나 개인 식별 정보는 수집하지 않으며, 익명 코드(P01, P02...)로만 구분됩니다.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <label class="consent-check-label">
+          <input type="checkbox" id="consent-checkbox">
+          <span>위의 개인정보 보호 안내 및 데이터 수집 목적을 확인하였으며 이에 동의합니다.</span>
+        </label>
+        <button id="btn-agree-consent" class="btn btn-accent" disabled style="width: 100%; padding: 12px; font-size: 1rem;">
+          동의하고 데이터 수집 시작하기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 메인 스크립트 모듈 로드 -->
+  <script type="module" src="js/dataCollectionApp.js"></script>
+</body>
+</html>
